@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poin FTTH Subang</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="header">
+  <h1>POIN FTTH SUBANG</h1>
+</header>
+
+<main class="container">
+  <section class="card">
+    <div class="card-header">
+      <h2>Rekap Performa</h2>
+      <button onclick="loadData()" class="btn-refresh">🔄 Refresh</button>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Nama TS</th>
+            <th>Hari</th>
+            <th>Rata²</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody id="rekap">
+          </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="grid-form">
+    <section class="card">
+      <h2>Input Poin Harian</h2>
+      <div class="form-group">
+        <label>Tanggal</label>
+        <input type="date" id="tanggal">
+      </div>
+      <div class="form-group">
+        <label>Nama TS</label>
+        <select id="nama">
+          <option value="">Memuat daftar...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Jumlah Poin</label>
+        <input type="number" id="poin" placeholder="Contoh: 20">
+      </div>
+      <button id="btnSimpan" onclick="inputHarian()">Simpan Poin</button>
+    </section>
+
+    <section class="card">
+      <h2>Manajemen TS</h2>
+      <div class="form-group">
+        <label>Nama Teknisi Baru</label>
+        <input type="text" id="namaTS" placeholder="Masukkan nama lengkap">
+      </div>
+      <button id="btnTambah" class="btn-secondary" onclick="tambahTS()">Tambah TS</button>
+    </section>
+  </div>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

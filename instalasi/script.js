@@ -1,7 +1,7 @@
 let formCount = 0;
 
 // ⚠️ GANTI DENGAN URL WEB APP GOOGLE SCRIPT ANDA
-const API_URL = "https://script.google.com/macros/s/AKfycbwoy3IE5ve-oSqDZucuprr-zV_4hhWZrAoAFY-xe5RSdMxhUmA7Xh_JPkQFwibJPNEz/exec?action=getMapping";
+const API_URL = "https://script.google.com/macros/s/AKfycbzy5Y4BNEIoHVICsLEaFxPML1bjdlRpWhqkhnBjtPRCG0J5s2sTGkatpav_1tyA3T17Fw/exec?action=getMapping";
 
 let odpMasterData = {}; 
 let isDataReady = false;

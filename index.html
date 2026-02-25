@@ -2,69 +2,195 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Poin FTTH Subang</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ION Portal App</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    :root { --bg: #f1f5f9; --card: #ffffff; --primary: #0ea5e9; --admin: #ef4444; --text: #1e293b; --text-muted: #64748b; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 80px; }
+
+    /* LOADER & LOGIN SCREEN */
+    .fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: #0f172a; z-index: 9999; display: flex; justify-content: center; align-items: center; transition: 0.5s; flex-direction: column; }
+    .hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    
+    .login-box { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+    .login-box h2 { color: white; margin-bottom: 20px; }
+    .input-grp { position: relative; margin-bottom: 15px; }
+    .input-grp i { position: absolute; left: 15px; top: 15px; color: #94a3b8; }
+    .input-grp input { width: 100%; padding: 14px 15px 14px 45px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white; outline: none; transition: 0.3s; }
+    .input-grp input:focus { border-color: var(--primary); }
+    .btn-login { width: 100%; padding: 14px; background: var(--primary); border: none; border-radius: 12px; color: white; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 10px; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+    .btn-login:disabled { opacity: 0.7; cursor: not-allowed; }
+
+    /* HEADER & LAYOUT UTAMA */
+    .top-header { background: var(--primary); padding: 20px 20px 40px; color: white; border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; }
+    .user-info h3 { font-size: 1.3rem; margin-bottom: 5px; }
+    .role-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+    .role-badge.admin { background: var(--admin); }
+
+    .content-area { margin: -20px 15px 20px; position: relative; z-index: 10; display: none; }
+    .content-area.active { display: block; animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* MENU DASHBOARD (HOME) */
+    .menu-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    .menu-card { background: var(--card); padding: 18px; border-radius: 16px; display: flex; align-items: center; gap: 15px; text-decoration: none; color: var(--text); box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.2s; border: 1px solid #e2e8f0; }
+    .menu-card:active { transform: scale(0.98); }
+    .menu-card .icon-box { width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; color: white; }
+    .bg-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    .bg-orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .bg-green { background: linear-gradient(135deg, #10b981, #059669); }
+    .menu-card h4 { font-size: 1rem; margin-bottom: 3px; }
+    .menu-card p { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* DATATABLES MOBILE STYLE */
+    .data-card { background: white; padding: 15px; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .data-info h4 { font-size: 0.95rem; color: var(--primary); margin-bottom: 4px; }
+    .data-info p { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+    
+    .action-bar { display: flex; gap: 10px; margin-bottom: 15px; }
+    .search-input { flex: 1; padding: 12px 15px; border-radius: 12px; border: 1px solid #cbd5e1; outline: none; }
+    .btn-add { background: var(--primary); color: white; border: none; padding: 0 20px; border-radius: 12px; font-weight: 600; cursor: pointer;}
+
+    /* BOTTOM NAVIGATION */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 5px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -5px 20px rgba(0,0,0,0.05); border-top: 1px solid #e2e8f0; z-index: 100; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--text-muted); text-decoration: none; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.2s; flex: 1; }
+    .nav-item i { font-size: 1.3rem; }
+    .nav-item.active { color: var(--primary); }
+    .nav-item.active i { transform: translateY(-3px); }
+
+    /* HIDE FOR MEMBERS */
+    .member-role .admin-only { display: none !important; }
+
+    /* MODAL FORM & DETAIL */
+    .modal-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; height: 85vh; background: white; z-index: 1000; border-top-left-radius: 25px; border-top-right-radius: 25px; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; }
+    .modal-sheet.open { bottom: 0; }
+    .modal-header { padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
+    .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; background: #f8fafc; outline: none; }
+    .modal-footer { padding: 15px 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; }
+    .btn-full { flex: 1; padding: 14px; border: none; border-radius: 12px; font-weight: 700; color: white; cursor: pointer; }
+    .btn-save { background: var(--primary); }
+    .btn-delete { background: var(--admin); }
+  </style>
 </head>
+
 <body>
 
-<header class="header">
-  <h1>POIN FTTH SUBANG</h1>
-</header>
-
-<main class="container">
-  <section class="card">
-    <div class="card-header">
-      <h2>Rekap Performa</h2>
-      <button onclick="loadData()" class="btn-refresh">🔄 Refresh</button>
-    </div>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Nama TS</th>
-            <th>Hari</th>
-            <th>Rata²</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody id="rekap">
-          </tbody>
-      </table>
-    </div>
-  </section>
-
-  <div class="grid-form">
-    <section class="card">
-      <h2>Input Poin Harian</h2>
-      <div class="form-group">
-        <label>Tanggal</label>
-        <input type="date" id="tanggal">
-      </div>
-      <div class="form-group">
-        <label>Nama TS</label>
-        <select id="nama">
-          <option value="">Memuat daftar...</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Jumlah Poin</label>
-        <input type="number" id="poin" placeholder="Contoh: 20">
-      </div>
-      <button id="btnSimpan" onclick="inputHarian()">Simpan Poin</button>
-    </section>
-
-    <section class="card">
-      <h2>Manajemen TS</h2>
-      <div class="form-group">
-        <label>Nama Teknisi Baru</label>
-        <input type="text" id="namaTS" placeholder="Masukkan nama lengkap">
-      </div>
-      <button id="btnTambah" class="btn-secondary" onclick="tambahTS()">Tambah TS</button>
-    </section>
+  <div id="loader" class="fullscreen-overlay">
+    <i class="fas fa-circle-notch fa-spin" style="font-size: 3rem; color: #0ea5e9; margin-bottom: 15px;"></i>
+    <p style="color: white; font-weight: 600;" id="loaderText">Memuat Sistem...</p>
   </div>
-</main>
 
-<script src="app.js"></script>
+  <div id="loginScreen" class="fullscreen-overlay hidden" style="background: linear-gradient(135deg, #0f172a, #1e293b);">
+    <div class="login-box">
+      <i class="fas fa-network-wired" style="font-size: 3rem; color: #0ea5e9; margin-bottom: 10px;"></i>
+      <h2>ION PORTAL</h2>
+      <div class="input-grp"><i class="fas fa-envelope"></i><input type="email" id="logEmail" placeholder="Email Anda"></div>
+      <div class="input-grp"><i class="fas fa-lock"></i><input type="password" id="logPass" placeholder="Password"></div>
+      <button id="btnLogin" class="btn-login" onclick="doLogin()">Masuk</button>
+    </div>
+  </div>
+
+  <div id="appScreen" class="hidden">
+    
+    <div class="top-header">
+      <div class="user-info">
+        <h3 id="userName">Halo, User</h3>
+        <span class="role-badge" id="userRole">Member</span>
+      </div>
+    </div>
+
+    <div id="tab-home" class="content-area active">
+      <h4 style="margin-bottom: 15px; color: #334155;">Menu Cepat</h4>
+      <div class="menu-grid">
+        <a href="instalasi/index.html" class="menu-card">
+          <div class="icon-box bg-blue"><i class="fas fa-file-signature"></i></div>
+          <div><h4>Laporan Instalasi</h4><p>Buat laporan pasang baru & reschdule</p></div>
+        </a>
+        <a href="terminate/index.html" class="menu-card">
+          <div class="icon-box bg-orange"><i class="fas fa-user-minus"></i></div>
+          <div><h4>Laporan Terminate</h4><p>Cabut perangkat & pelanggan berhenti</p></div>
+        </a>
+        <a href="https://ionnetworksubang.github.io/form/" class="menu-card">
+          <div class="icon-box bg-green"><i class="fab fa-whatsapp"></i></div>
+          <div><h4>Tools WhatsApp</h4><p>Kirim pesan template ke pelanggan</p></div>
+        </a>
+      </div>
+    </div>
+
+    <div id="tab-odp" class="content-area">
+      <div class="action-bar">
+        <input type="text" class="search-input" id="searchOdp" placeholder="Cari Nama / Kode ODP..." oninput="renderOdp()">
+        <button class="btn-add admin-only" onclick="openModal('odp', 'add')"><i class="fas fa-plus"></i> ODP</button>
+        <button class="btn-add admin-only" style="background: #10b981;" onclick="openBulkOdp()"><i class="fas fa-upload"></i></button>
+      </div>
+      <div id="listOdp"></div>
+    </div>
+
+    <div id="tab-olt" class="content-area">
+      <div class="action-bar">
+        <input type="text" class="search-input" id="searchOlt" placeholder="Cari OLT..." oninput="renderOlt()">
+        <button class="btn-add admin-only" onclick="openModal('olt', 'add')"><i class="fas fa-plus"></i> OLT</button>
+      </div>
+      <div id="listOlt"></div>
+    </div>
+
+    <div id="tab-member" class="content-area admin-only">
+      <div class="action-bar">
+        <input type="text" class="search-input" id="searchMember" placeholder="Cari Teknisi..." oninput="renderMember()">
+        <button class="btn-add" onclick="openModal('member', 'add')"><i class="fas fa-plus"></i> Tim</button>
+      </div>
+      <div id="listMember"></div>
+    </div>
+
+    <nav class="bottom-nav">
+      <div class="nav-item active" onclick="switchTab('home', this)"><i class="fas fa-home"></i>Home</div>
+      <div class="nav-item" onclick="switchTab('odp', this)"><i class="fas fa-box"></i>ODP</div>
+      <div class="nav-item" onclick="switchTab('olt', this)"><i class="fas fa-server"></i>OLT</div>
+      <div class="nav-item admin-only" onclick="switchTab('member', this)"><i class="fas fa-users"></i>Tim</div>
+      <div class="nav-item" onclick="doLogout()"><i class="fas fa-sign-out-alt" style="color:#ef4444;"></i>Keluar</div>
+    </nav>
+
+  </div> <div class="modal-sheet" id="crudModal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Tambah Data</h3>
+      <i class="fas fa-times" style="font-size: 1.5rem; color: #94a3b8; cursor: pointer;" onclick="closeModal()"></i>
+    </div>
+    <div class="modal-body" id="modalFormBody">
+      </div>
+    <div class="modal-footer admin-only">
+      <button class="btn-full btn-delete" id="btnDelete" onclick="saveData('delete')" style="display: none;"><i class="fas fa-trash"></i> Hapus</button>
+      <button class="btn-full btn-save" onclick="saveData('save')"><i class="fas fa-save"></i> Simpan</button>
+    </div>
+  </div>
+
+  <div class="modal-sheet" id="bulkModal">
+    <div class="modal-header">
+      <h3>Upload Massal ODP</h3>
+      <i class="fas fa-times" style="font-size: 1.5rem; cursor: pointer;" onclick="closeModal()"></i>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Pilih OLT Induk</label>
+        <select id="bulkOltSelect"></select>
+      </div>
+      <div class="form-group">
+        <label>Daftar Nama ODP (Pisahkan dengan Enter)</label>
+        <textarea id="bulkOdpText" rows="10" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #ccc;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-full btn-save" onclick="saveBulkOdp()"><i class="fas fa-cloud-upload-alt"></i> Upload Sekarang</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
-</html>
+        </html>

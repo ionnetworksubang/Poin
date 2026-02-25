@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laporan Instalasi Subang</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="techLoader" class="tech-loader">
+    <div class="loader-content">
+      <div class="radar"></div>
+      <i class="fas fa-satellite-dish icon-pulse"></i>
+      <h2>ION NETWORK</h2>
+      <p id="loaderText">Menyinkronkan Database ODP...</p>
+      <div class="progress-bar"><div class="progress-fill"></div></div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h2>Form Laporan Subang</h2>
+    <div class="subtitle">Instalasi, Reschedule & Maintenance</div>
+
+    <div class="date-display" id="currentDate"></div>
+
+    <div class="header-input">
+      <label for="reportTitle">Judul Laporan</label>
+      <select id="reportTitle">
+        <option value="*LAPORAN INSTALASI SUBANG*">LAPORAN INSTALASI SUBANG</option>
+        <option value="*LAPORAN MAINTENANCE SUBANG*">LAPORAN MAINTENANCE SUBANG</option>
+        <option value="*LAPORAN INSTALASI & MAINTENANCE SUBANG*">LAPORAN INSTALASI & MAINTENANCE SUBANG</option>
+      </select>
+      
+      <label for="reportDate">Tanggal Laporan</label>
+      <input type="text" id="reportDate" placeholder="Contoh: Rabu, 24 September 2025">
+      
+      <label for="teamName">Nama Tim</label>
+      <input type="text" id="teamName" placeholder="Contoh: Ramdan & Adrian">
+    </div>
+
+    <div id="forms"></div>
+
+    <div class="btn-group">
+      <button class="add-tambahinstalasi" onclick="addForm('tambahinstalasi')">
+        <i class="fas fa-rocket btn-icon"></i>Tambah Instalasi</button>
+      <button class="add-jadwalulanginstalasi" onclick="addForm('jadwalulanginstalasi')">
+        <i class="fas fa-calendar-alt btn-icon"></i>Jadwal Ulang Instalasi</button>
+      <button class="add-tambahmaintenance" onclick="addForm('tambahmaintenance')">
+        <i class="fas fa-screwdriver-wrench btn-icon"></i>Tambah Maintenance</button>
+      <button class="add-jadwalulangmaintenance" onclick="addForm('jadwalulangmaintenance')">
+         <i class="fas fa-arrows-rotate btn-icon"></i>Jadwal Ulang Maintenance</button>
+      <button class="add-cancelinstalasi" onclick="addForm('cancelinstalasi')">
+          <i class="fas fa-ban btn-icon"></i> Cancel Instalasi</button>
+    </div>
+
+    <div class="btn-group">
+      <button class="generate" onclick="generate()">
+        <i class="fas fa-file-waveform btn-icon"></i>Buat Laporan</button>
+      <button class="wa" onclick="sendWA()">
+        <i class="fab fa-whatsapp btn-icon"></i>Kirim via WhatsApp</button>
+      <button class="reset" onclick="resetLaporan()">
+        <i class="fas fa-arrow-rotate-left btn-icon"></i>Reset Laporan</button>
+    </div>
+    
+    <pre id="output"></pre>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

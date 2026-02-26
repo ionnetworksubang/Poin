@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Tools WhatsApp | ION Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    :root { 
+      --bg-color: #f4f7f6; 
+      --card-bg: #ffffff; 
+      --text-main: #2c3e50; 
+      --text-muted: #7f8c8d; 
+      --border-color: #e2e8f0; 
+      --primary: #3498db; 
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', Arial, sans-serif; }
+    body { background: var(--bg-color); color: var(--text-main); -webkit-tap-highlight-color: transparent; padding-bottom: 40px; }
+    
+    /* HEADER STICKY */
+    .app-header {
+      position: sticky; top: 0; z-index: 100; background: white;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .header-btn {
+      width: 40px; height: 40px; background: #f8fafc; border-radius: 10px;
+      display: flex; justify-content: center; align-items: center;
+      font-size: 1.2rem; color: var(--text-main); cursor: pointer; border: 1px solid var(--border-color); transition: 0.2s;
+    }
+    .header-btn:active { background: #e2e8f0; }
+    .header-title { font-size: 1.1rem; font-weight: 700; color: #1e293b; }
+    
+    .container { padding: 20px 15px; max-width: 600px; margin: 0 auto; }
+    
+    /* CARD & INPUTS */
+    .card {
+      background: var(--card-bg); border-radius: 16px; padding: 20px;
+      margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border-color);
+      animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
+
+    .section-heading { font-size: 1rem; font-weight: 800; color: #1e293b; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+    
+    .form-group { margin-bottom: 16px; width: 100%; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    label { display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 8px; }
+    
+    .input-modern {
+      width: 100%; padding: 14px 16px; border: 1px solid #cbd5e1; border-radius: 12px;
+      font-size: 0.95rem; background: #f8fafc; color: #1e293b; transition: all 0.3s ease; outline: none;
+    }
+    .input-modern:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15); }
+    
+    /* BUTTONS */
+    .btn-main { 
+      width: 100%; padding: 16px; border: none; border-radius: 14px; font-weight: 800; 
+      font-size: 1rem; color: white; cursor: pointer; display: flex; justify-content: center; 
+      align-items: center; gap: 10px; transition: 0.2s; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+    }
+    .btn-main:active { transform: scale(0.98); }
+    .btn-green { background: linear-gradient(135deg, #10b981, #059669); }
+    
+    /* Tombol Ambil Kontak */
+    .btn-contact {
+      background: #eff6ff; color: var(--primary); border: 1px dashed #bfdbfe;
+      padding: 12px 15px; border-radius: 12px; font-size: 0.9rem; font-weight: 700;
+      width: 100%; cursor: pointer; margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s;
+    }
+    .btn-contact:active { background: #dbeafe; }
+
+    /* PREVIEW AREA */
+    .preview-box {
+      background: #1e293b; color: #f8fafc; padding: 18px; border-radius: 14px;
+      font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; line-height: 1.6;
+      border-left: 5px solid var(--primary); display: none; margin-bottom: 20px;
+    }
+    
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-btn" onclick="window.history.back()"><i class="fas fa-arrow-left"></i></div>
+    <div class="header-title">Tools WhatsApp</div>
+    <div class="header-btn" onclick="location.reload()"><i class="fas fa-redo-alt" style="color: #ef4444;"></i></div>
+  </header>
+
+  <div class="container">
+    <form id="waForm">
+      
+      <div class="card">
+        <div class="section-heading"><i class="fas fa-user-circle" style="color:#3498db;"></i> Target Penerima</div>
+        
+        <div class="form-group">
+          <label>Nomor WhatsApp (Awali 08 atau 62)</label>
+          <input type="tel" id="target" class="input-modern" placeholder="Contoh: 081234567890" required>
+        </div>
+
+        <div class="form-group">
+          <label>Pilih Template Pesan</label>
+          <select id="template" class="input-modern" required>
+            <option value="">-- Pilih Template --</option>
+            <option value="panduan">📘 Panduan Akun & Pembayaran</option>
+            <option value="pemasangan">🛠️ Konfirmasi Pemasangan</option>
+            <option value="maintenance">⚡ Konfirmasi Maintenance</option>
+            <option value="terminate">🚫 Cabut Perangkat</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="guideFields" class="card hidden">
+        <div class="section-heading"><i class="fas fa-file-invoice" style="color:#9333ea;"></i> Detail Panduan</div>
+        
+        <div class="form-group">
+            <label>Nama Pelanggan</label>
+            <input type="text" id="nama" class="input-modern" placeholder="Contoh: Bpk. Jhon">
+        </div>
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label>ID Pelanggan</label>
+                <input type="text" id="idPel" class="input-modern" placeholder="ID12345">
+            </div>
+            <div class="form-group">
+                <label>Sandi APK</label>
+                <input type="text" id="sandi" class="input-modern" placeholder="654321">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Penanggung Jawab</label>
+            <select id="pjSelect" class="input-modern">
+                <option value="JAKA NUGRAHA - 085321525261">JAKA NUGRAHA</option>
+                <option value="Achmed - 082130339580">Achmed</option>
+                <option value="Alex - 082315919466">Alex</option>
+                <option value="Anjar - 083134944914">Anjar</option>
+                <option value="Chadika - 085175402270">Chadika</option>
+                <option value="Deni - 083142076756">Deni</option>
+                <option value="Gani - 089501960296">Gani</option>
+                <option value="Gilang - 083829349013">Gilang</option>
+                <option value="Lili - 082320215241">Lili</option>
+                <option value="Uci - 081221500616">Uci</option>
+                <option value="Romi Kantomi - 085860417890">Romi Kantomi</option>
+                <option value="Soleh - 083837105050">Soleh</option>
+                <option value="Taufik - 082321558345">Taufik</option>
+                <option value="Firli - 083856525355">Firli</option>
+                <option value="Delia - 088220333578">Delia</option>
+                <option value="lainnya">-- Ketik Manual / Ambil Kontak --</option>
+            </select>
+            
+            <div id="manualPJGroup" class="hidden" style="margin-top: 15px;">
+                <input type="text" id="pjManual" class="input-modern" placeholder="Format: Nama - 08xxx">
+                <button type="button" id="btnPickContact" class="btn-contact">
+                    <i class="far fa-address-book"></i> Ambil Dari Kontak HP
+                </button>
+            </div>
+        </div>
+      </div>
+
+      <div id="txtPreview" class="preview-box"></div>
+
+      <button type="submit" class="btn-main btn-green">
+        <i class="fab fa-whatsapp" style="font-size: 1.3rem;"></i> KIRIM KE WHATSAPP
+      </button>
+
+    </form>
+    
+    <div style="text-align:center; font-size:0.75rem; color:#94a3b8; margin-top:25px;">
+        ION NETWORK DISPATCHER © 2026
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('waForm');
+    const template = document.getElementById('template');
+    const guideFields = document.getElementById('guideFields');
+    const pjSelect = document.getElementById('pjSelect');
+    const manualPJGroup = document.getElementById('manualPJGroup');
+    const pjManual = document.getElementById('pjManual');
+    const btnPickContact = document.getElementById('btnPickContact');
+    const txtPreview = document.getElementById('txtPreview');
+
+    // Logic Tampilan Form (Menampilkan form panduan jika dipilih)
+    template.addEventListener('change', () => {
+        if (template.value === 'panduan') {
+            guideFields.classList.remove('hidden');
+        } else {
+            guideFields.classList.add('hidden');
+        }
+        updatePreview();
+    });
+
+    // Menampilkan input manual Penanggung Jawab jika dipilih 'lainnya'
+    pjSelect.addEventListener('change', () => {
+        if (pjSelect.value === 'lainnya') {
+            manualPJGroup.classList.remove('hidden');
+        } else {
+            manualPJGroup.classList.add('hidden');
+        }
+        updatePreview();
+    });
+
+    // Fitur Ambil Kontak (Contact Picker API - Khusus Android Chrome)
+    btnPickContact.addEventListener('click', async () => {
+        if (!('contacts' in navigator && 'select' in navigator.contacts)) {
+            Swal.fire('Fitur Tidak Didukung', 'Maaf, browser ini tidak mendukung akses kontak otomatis. Silakan ketik manual atau gunakan Google Chrome di HP Android.', 'info');
+            return;
+        }
+
+        try {
+            const props = ['name', 'tel'];
+            const opts = { multiple: false };
+            const contact = await navigator.contacts.select(props, opts);
+            
+            if (contact.length > 0) {
+                const name = contact[0].name ? contact[0].name[0] : "PJ";
+                const phone = contact[0].tel ? contact[0].tel[0] : "";
+                pjManual.value = `${name} - ${phone}`;
+                updatePreview();
+            }
+        } catch (ex) {
+            console.log("Contact picker cancelled");
+        }
+    });
+
+    // Fungsi Render Real-time Preview Teks
+    function updatePreview() {
+        const type = template.value;
+        if (!type) { 
+            txtPreview.style.display = 'none'; 
+            return; 
+        }
+
+        let msg = "";
+        const nama = document.getElementById('nama').value || "[NAMA]";
+        const id = document.getElementById('idPel').value || "[ID]";
+        const sandi = document.getElementById('sandi').value || "[SANDI]";
+        let pj = (pjSelect.value === 'lainnya') ? (pjManual.value || "[NAMA PJ]") : pjSelect.value;
+
+        switch(type) {
+            case 'panduan':
+                msg = `Panduan Lengkap Pembayaran & Akun Ion Network\n\nYth. Bapak/Ibu ${nama},\n\nBerikut informasi akun WiFi Anda:\n- ID PELANGGAN : ${id}\n- SANDI APLIKASI : ${sandi}\n\nPanduan lengkap & cara bayar klik link di bawah:\nhttps://ionnetworksubang.github.io/Ion-network\n\nLink Aplikasi Member:\nhttps://play.google.com/store/apps/details?id=com.ionboardband.memberionapps\n\nPenanggung Jawab: ${pj}\n\nTerima kasih.`;
+                break;
+            case 'pemasangan':
+                msg = "Assalamualaikum, saya teknisi dari *ION NETWORK*. Ingin konfirmasi terkait jadwal pemasangan WiFi di lokasi Anda. Terima kasih.";
+                break;
+            case 'maintenance':
+                msg = "Assalamualaikum, saya teknisi dari *ION NETWORK*. Ingin konfirmasi terkait jadwal perbaikan/maintenance WiFi. Terima kasih.";
+                break;
+            case 'terminate':
+                msg = "Assalamualaikum, saya teknisi dari *ION NETWORK*. Ingin konfirmasi terkait jadwal pengambilan perangkat WiFi karena status berhenti berlangganan. Terima kasih.";
+                break;
+        }
+
+        txtPreview.innerText = msg;
+        txtPreview.style.display = 'block';
+        return msg;
+    }
+
+    // Pasang listener di setiap input agar preview selalu update pas lagi ngetik
+    document.querySelectorAll('input, select').forEach(input => {
+        input.addEventListener('input', updatePreview);
+    });
+
+    // Eksekusi Submit Form ke WhatsApp
+    form.addEventListener('submit', (e) => {
+        e.preventDefault(); // Mencegah halaman reload
+        
+        let target = document.getElementById('target').value.replace(/\D/g, ''); // Hapus semua selain angka
+        
+        // Auto konversi 08 jadi 628
+        if (target.startsWith('0')) {
+            target = '62' + target.substring(1);
+        } else if (!target.startsWith('62')) {
+            target = '62' + target;
+        }
+
+        if (target.length < 10) { 
+            Swal.fire('Ups!', 'Nomor tujuan terlalu pendek atau tidak valid!', 'warning'); 
+            return; 
+        }
+
+        const finalMsg = updatePreview();
+        const waUrl = `https://wa.me/${target}?text=${encodeURIComponent(finalMsg)}`;
+        
+        // Buka WhatsApp
+        window.open(waUrl, '_blank');
+    });
+  </script>
+
+</body>
+</html>

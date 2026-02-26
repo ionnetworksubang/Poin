@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ODP Manajemen | ION Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    :root { --bg: #f8fafc; --primary: #2563eb; --admin: #e11d48; --text: #334155; --muted: #64748b; --border: #e2e8f0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: var(--bg); color: var(--text); }
+    .header { background: linear-gradient(135deg, #7e22ce, #9333ea); padding: 20px; color: white; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 15px rgba(147, 51, 234, 0.2); position: sticky; top: 0; z-index: 100; }
+    .header i { font-size: 1.5rem; cursor: pointer; } .header h2 { font-size: 1.2rem; font-weight: 700; }
+    .container { padding: 20px; }
+    .search-box { width: 100%; padding: 14px 18px; border-radius: 12px; border: 1px solid var(--border); font-size: 0.95rem; margin-bottom: 10px; outline: none; }
+    .card { background: white; padding: 18px; border-radius: 16px; margin-bottom: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+    .card-title { font-weight: 700; color: #1e293b; margin-bottom: 5px; } .card-subtitle { font-size: 0.8rem; color: var(--muted); }
+    .client-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid #9333ea; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+    .client-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border); padding-bottom: 10px; margin-bottom: 10px; }
+    .port-badge { background: #f3e8ff; color: #9333ea; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; }
+    .client-data p { font-size: 0.85rem; margin-bottom: 5px; color: var(--muted); } .client-data strong { color: var(--text); }
+    .action-btns { display: flex; gap: 10px; margin-top: 15px; }
+    .btn { flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; color: white; }
+    .btn-edit { background: #2563eb; } .btn-del { background: var(--admin); }
+    .hidden { display: none !important; }
+    .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(15,23,42,0.8); backdrop-filter: blur(5px); z-index: 999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; }
+  </style>
+</head>
+<body>
+
+  <div class="loader-overlay" id="loader"><i class="fas fa-circle-notch fa-spin" style="font-size: 3rem; color: #a855f7; margin-bottom: 15px;"></i><p style="font-weight: 600;">Memuat Database Pelanggan...</p></div>
+  <div class="header"><i class="fas fa-arrow-left" onclick="goBack()"></i><h2 id="pageTitle">ODP Manajemen</h2></div>
+
+  <div class="container" id="viewOdpList">
+    <input type="text" class="search-box" id="searchOdp" placeholder="Cari Nama ODP..." oninput="renderOdpList()">
+    <select class="search-box" id="filterOlt" onchange="renderOdpList()"><option value="">Semua OLT Induk</option></select>
+    <div id="listOdp"></div>
+  </div>
+
+  <div class="container hidden" id="viewClientList"><h3 style="margin-bottom: 15px; color: #1e293b;" id="detailOdpName">Isi ODP</h3><div id="listClient"></div></div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzvuGEkdfJoSQPAGQRGSkVTd-4FIM4FEaIPQKcK6J8Gzae5ox6ASq7rM_TSnxdLBp35/exec";
+    let currentUser = JSON.parse(localStorage.getItem('ionUser'));
+    let masterData = {};
+
+    window.onload = async () => {
+      if (!currentUser) return window.location.href = "index.html";
+      try {
+        let res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "getData" }) }).then(r=>r.json());
+        if (res.ok) { masterData = res.data; populateOltFilter(); renderOdpList(); document.getElementById('loader').classList.add('hidden'); }
+      } catch (e) { Swal.fire('Error', 'Gagal memuat data', 'error'); }
+    };
+
+    function goBack() {
+        if (!document.getElementById('viewClientList').classList.contains('hidden')) {
+            document.getElementById('viewClientList').classList.add('hidden'); document.getElementById('viewOdpList').classList.remove('hidden'); document.getElementById('pageTitle').innerText = "ODP Manajemen";
+        } else { window.location.href = "index.html"; }
+    }
+
+    function populateOltFilter() {
+        let opts = '<option value="">Semua OLT Induk</option>';
+        masterData.olt.forEach(r => opts += `<option value="${r[0]}">${r[0]}</option>`);
+        document.getElementById('filterOlt').innerHTML = opts;
+    }
+
+    function renderOdpList() {
+        let q = document.getElementById('searchOdp').value.toLowerCase(), f = document.getElementById('filterOlt').value, html = "";
+        masterData.odp.forEach(row => {
+            let namaOdp = row[0], olt = row[2], maxPort = row[11], usedCount = (masterData.usedPorts[namaOdp] || []).length;
+            if (namaOdp.toLowerCase().includes(q) && (f === "" || olt === f)) {
+                html += `<div class="card" onclick="openOdpDetail('${namaOdp}')"><div><div class="card-title">${namaOdp}</div><div class="card-subtitle"><i class="fas fa-server"></i> ${olt} | Terisi: ${usedCount}/${maxPort} Port</div></div><i class="fas fa-chevron-right" style="color:#cbd5e1;"></i></div>`;
+            }
+        });
+        document.getElementById('listOdp').innerHTML = html;
+    }
+
+    function openOdpDetail(namaOdp) {
+        document.getElementById('pageTitle').innerText = "Detail Pelanggan"; document.getElementById('detailOdpName').innerText = "Pelanggan di " + namaOdp;
+        document.getElementById('viewOdpList').classList.add('hidden'); document.getElementById('viewClientList').classList.remove('hidden');
+        let clients = masterData.pelanggan.filter(p => p[5] === namaOdp);
+        clients.sort((a, b) => parseInt(a[6]) - parseInt(b[6]));
+        let html = "";
+        if (clients.length === 0) html = "<p style='color:#64748b; text-align:center; margin-top:30px;'>ODP ini masih kosong.</p>";
+
+        clients.forEach(c => {
+            let adminBtns = "";
+            if(currentUser.role === 'Admin') {
+                let rawData = encodeURIComponent(JSON.stringify(c));
+                adminBtns = `<div class="action-btns"><button class="btn btn-edit" onclick="editClient('${rawData}')"><i class="fas fa-edit"></i> Edit / Pindah</button><button class="btn btn-del" onclick="deleteClient('${c[3]}')"><i class="fas fa-trash"></i> Hapus</button></div>`;
+            }
+            html += `<div class="client-card"><div class="client-header"><h4 style="color:#1e293b;">${c[2]}</h4><span class="port-badge">Port ${c[6]}</span></div><div class="client-data"><p><strong>CID:</strong> ${c[3]}</p><p><strong>Email:</strong> ${c[9] || '-'}</p><p><strong>Perangkat:</strong> ${c[10] || '-'} (SN: ${c[11] || '-'})</p><p><strong>Input:</strong> ${c[7]} (${c[0]})</p></div>${adminBtns}</div>`;
+        });
+        document.getElementById('listClient').innerHTML = html;
+    }
+
+    async function deleteClient(cid) {
+        if(!await Swal.fire({title: 'Hapus?', text: 'Port akan kembali kosong', icon: 'warning', showCancelButton: true}).then(r=>r.isConfirmed)) return;
+        document.getElementById('loader').classList.remove('hidden');
+        try {
+            let res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "crud", payload: { sheetName: "Data_Pelanggan", mode: "delete", oldKey: cid }}) }).then(r=>r.json());
+            if(res.ok) { Swal.fire('Terhapus', res.message, 'success'); setTimeout(() => location.reload(), 1000); } 
+        } catch(e) {}
+    }
+
+    async function editClient(encodedData) {
+        let c = JSON.parse(decodeURIComponent(encodedData));
+        const { value: formValues } = await Swal.fire({ title: 'Edit & Pindah Pelanggan', html: `<div style="text-align:left; font-size:0.9rem;"><label>Nama ODP Baru:</label><input id="swal-odp" class="swal2-input" value="${c[5]}"><label>Port Baru:</label><input id="swal-port" type="number" class="swal2-input" value="${c[6]}"><label>SN Perangkat Baru:</label><input id="swal-sn" class="swal2-input" value="${c[11]}"></div>`, focusConfirm: false, showCancelButton: true, preConfirm: () => { return { odp: document.getElementById('swal-odp').value, port: document.getElementById('swal-port').value, sn: document.getElementById('swal-sn').value } } });
+        if (formValues) {
+            document.getElementById('loader').classList.remove('hidden');
+            c[5] = formValues.odp; c[6] = formValues.port; c[11] = formValues.sn;
+            try {
+                let res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "crud", payload: { sheetName: "Data_Pelanggan", mode: "edit", dataRow: c, oldKey: c[3] }}) }).then(r=>r.json());
+                if(res.ok) { Swal.fire('Tersimpan', res.message, 'success'); setTimeout(() => location.reload(), 1000); } 
+            } catch(e) {}
+        }
+    }
+  </script>
+</body>
+</html>

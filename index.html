@@ -5,96 +5,137 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ION Portal App</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
-    :root { --bg: #f1f5f9; --card: #ffffff; --primary: #0ea5e9; --admin: #ef4444; --text: #1e293b; --text-muted: #64748b; }
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg); color: var(--text); padding-bottom: 80px; }
-
-    /* LOADER & LOGIN SCREEN */
-    .fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: #0f172a; z-index: 9999; display: flex; justify-content: center; align-items: center; transition: 0.5s; flex-direction: column; }
-    .hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    /* VARAIBEL WARNA BARU (SOFT & CLEAN) */
+    :root { 
+      --bg-body: #f8fafc; 
+      --bg-card: #ffffff; 
+      --primary: #2563eb; 
+      --primary-hover: #1d4ed8;
+      --admin: #e11d48; 
+      --text-main: #334155; 
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+    }
     
-    .login-box { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-    .login-box h2 { color: white; margin-bottom: 20px; }
-    .input-grp { position: relative; margin-bottom: 15px; }
-    .input-grp i { position: absolute; left: 15px; top: 15px; color: #94a3b8; }
-    .input-grp input { width: 100%; padding: 14px 15px 14px 45px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white; outline: none; transition: 0.3s; }
-    .input-grp input:focus { border-color: var(--primary); }
-    .btn-login { width: 100%; padding: 14px; background: var(--primary); border: none; border-radius: 12px; color: white; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 10px; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg-body); color: var(--text-main); padding-bottom: 90px; overflow-x: hidden; }
+
+    /* OVERLAY & LOADER */
+    .fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; transition: opacity 0.4s ease, visibility 0.4s ease; }
+    .fullscreen-overlay.hidden { opacity: 0; visibility: hidden; }
+    
+    /* LOGIN SCREEN YANG MENYATU (TERANG & BERSIH) */
+    #loginScreen { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
+    .login-box { background: white; padding: 40px 25px; border-radius: 28px; width: 90%; max-width: 360px; text-align: center; box-shadow: 0 20px 40px rgba(37, 99, 235, 0.1); border: 1px solid white; }
+    .login-box h2 { color: #1e293b; margin-bottom: 25px; font-weight: 800; letter-spacing: 0.5px; }
+    .input-grp { position: relative; margin-bottom: 16px; }
+    .input-grp i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1.1rem; }
+    .input-grp input { width: 100%; padding: 15px 15px 15px 48px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 14px; color: var(--text-main); font-size: 0.95rem; outline: none; transition: 0.3s; }
+    .input-grp input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px rgba(37,99,235,0.1); }
+    .btn-login { width: 100%; padding: 15px; background: var(--primary); border: none; border-radius: 14px; color: white; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 15px; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25); }
     .btn-login:disabled { opacity: 0.7; cursor: not-allowed; }
 
-    /* HEADER & LAYOUT UTAMA */
-    .top-header { background: var(--primary); padding: 20px 20px 40px; color: white; border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; }
-    .user-info h3 { font-size: 1.3rem; margin-bottom: 5px; }
-    .role-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
-    .role-badge.admin { background: var(--admin); }
+    #loader { background: #0f172a; }
 
-    .content-area { margin: -20px 15px 20px; position: relative; z-index: 10; display: none; }
-    .content-area.active { display: block; animation: fadeIn 0.3s; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    /* HEADER & LAYOUT UTAMA */
+    .top-header { background: linear-gradient(135deg, #1e40af, #2563eb); padding: 25px 20px 45px; color: white; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; box-shadow: 0 4px 20px rgba(37, 99, 235, 0.15); }
+    .user-info h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 6px; }
+    .role-badge { display: inline-block; background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); padding: 5px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px; }
+    .role-badge.admin { background: var(--admin); color: white; }
+
+    /* ANIMASI TRANSISI TAB (SLIDE & FADE) */
+    .content-area { margin: -25px 15px 20px; display: none; }
+    .content-area.active { display: block; animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes slideIn {
+      0% { opacity: 0; transform: translateX(30px); }
+      100% { opacity: 1; transform: translateX(0); }
+    }
 
     /* MENU DASHBOARD (HOME) */
-    .menu-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-    .menu-card { background: var(--card); padding: 18px; border-radius: 16px; display: flex; align-items: center; gap: 15px; text-decoration: none; color: var(--text); box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.2s; border: 1px solid #e2e8f0; }
-    .menu-card:active { transform: scale(0.98); }
-    .menu-card .icon-box { width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; color: white; }
-    .bg-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-    .bg-orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
-    .bg-green { background: linear-gradient(135deg, #10b981, #059669); }
-    .menu-card h4 { font-size: 1rem; margin-bottom: 3px; }
-    .menu-card p { font-size: 0.8rem; color: var(--text-muted); }
+    .menu-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 15px; }
+    .menu-card { background: var(--bg-card); padding: 20px; border-radius: 20px; display: flex; align-items: center; gap: 18px; text-decoration: none; color: var(--text-main); box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid var(--border-color); transition: 0.2s; }
+    .menu-card:active { transform: scale(0.97); background: #f8fafc; }
+    .menu-card .icon-box { width: 50px; height: 50px; border-radius: 14px; display: flex; justify-content: center; align-items: center; font-size: 1.4rem; color: white; flex-shrink: 0; }
+    .bg-blue { background: #eff6ff; color: #2563eb !important; }
+    .bg-orange { background: #fffbeb; color: #d97706 !important; }
+    .bg-green { background: #ecfdf5; color: #059669 !important; }
+    .menu-card h4 { font-size: 1.05rem; font-weight: 600; margin-bottom: 4px; }
+    .menu-card p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
 
-    /* DATATABLES MOBILE STYLE */
-    .data-card { background: white; padding: 15px; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-    .data-info h4 { font-size: 0.95rem; color: var(--primary); margin-bottom: 4px; }
-    .data-info p { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+    /* LIST DATA & SEARCH */
+    .action-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+    .action-row { display: flex; gap: 10px; }
+    .search-input { flex: 1; padding: 14px 18px; border-radius: 16px; border: 1px solid var(--border-color); background: white; outline: none; font-size: 0.95rem; box-shadow: 0 2px 8px rgba(0,0,0,0.02); transition: 0.3s; }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
     
-    .action-bar { display: flex; gap: 10px; margin-bottom: 15px; }
-    .search-input { flex: 1; padding: 12px 15px; border-radius: 12px; border: 1px solid #cbd5e1; outline: none; }
-    .btn-add { background: var(--primary); color: white; border: none; padding: 0 20px; border-radius: 12px; font-weight: 600; cursor: pointer;}
+    select.search-input { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em; padding-right: 2.5rem; color: var(--text-main); font-weight: 500;}
 
-    /* BOTTOM NAVIGATION */
-    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 5px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -5px 20px rgba(0,0,0,0.05); border-top: 1px solid #e2e8f0; z-index: 100; }
-    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--text-muted); text-decoration: none; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.2s; flex: 1; }
-    .nav-item i { font-size: 1.3rem; }
+    .btn-add { background: var(--primary); color: white; border: none; padding: 0 22px; border-radius: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(37,99,235,0.2); }
+    .btn-add:active { transform: scale(0.95); }
+
+    .data-card { background: white; padding: 18px; border-radius: 18px; margin-bottom: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+    .data-card:active { background: #f8fafc; transform: scale(0.98); }
+    .data-info h4 { font-size: 1rem; color: var(--text-main); font-weight: 600; margin-bottom: 6px; }
+    .data-info p { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+    .data-icon { color: var(--primary); opacity: 0.8; }
+
+    /* BOTTOM NAVIGATION BAR */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); display: flex; justify-content: space-around; padding: 12px 5px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 20px rgba(0,0,0,0.04); border-top: 1px solid var(--border-color); z-index: 100; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 6px; color: #94a3b8; text-decoration: none; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.3s; flex: 1; }
+    .nav-item i { font-size: 1.3rem; transition: 0.3s; }
     .nav-item.active { color: var(--primary); }
-    .nav-item.active i { transform: translateY(-3px); }
+    .nav-item.active i { transform: translateY(-4px); }
 
     /* HIDE FOR MEMBERS */
     .member-role .admin-only { display: none !important; }
 
-    /* MODAL FORM & DETAIL */
-    .modal-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; height: 85vh; background: white; z-index: 1000; border-top-left-radius: 25px; border-top-right-radius: 25px; box-shadow: 0 -10px 30px rgba(0,0,0,0.1); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; }
+    /* MODAL FORM */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(3px); z-index: 999; opacity: 0; visibility: hidden; transition: 0.3s; }
+    .modal-overlay.open { opacity: 1; visibility: visible; }
+
+    .modal-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; max-height: 90vh; background: white; z-index: 1000; border-top-left-radius: 28px; border-top-right-radius: 28px; box-shadow: 0 -10px 40px rgba(0,0,0,0.15); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; }
     .modal-sheet.open { bottom: 0; }
-    .modal-header { padding: 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
-    .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
-    .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; background: #f8fafc; outline: none; }
-    .modal-footer { padding: 15px 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; }
-    .btn-full { flex: 1; padding: 14px; border: none; border-radius: 12px; font-weight: 700; color: white; cursor: pointer; }
-    .btn-save { background: var(--primary); }
-    .btn-delete { background: var(--admin); }
+    
+    .modal-header { padding: 22px 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: white; border-top-left-radius: 28px; border-top-right-radius: 28px; }
+    .modal-header h3 { font-size: 1.15rem; font-weight: 700; color: var(--text-main); }
+    .close-btn { width: 32px; height: 32px; background: #f1f5f9; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #64748b; font-size: 1.1rem; cursor: pointer; transition: 0.2s; }
+    .close-btn:active { background: #e2e8f0; }
+
+    .modal-body { padding: 25px; overflow-y: auto; flex: 1; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: var(--text-main); }
+    .form-group input, .form-group select { width: 100%; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 12px; background: #f8fafc; outline: none; font-size: 0.95rem; color: var(--text-main); transition: 0.3s; }
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    .form-group input:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+
+    .modal-footer { padding: 18px 25px; border-top: 1px solid var(--border-color); display: flex; gap: 12px; background: white; }
+    .btn-full { flex: 1; padding: 15px; border: none; border-radius: 14px; font-weight: 600; font-size: 0.95rem; color: white; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+    .btn-full:active { transform: scale(0.97); }
+    .btn-save { background: var(--primary); box-shadow: 0 4px 12px rgba(37,99,235,0.2); }
+    .btn-delete { background: white; color: var(--admin); border: 1px solid var(--admin); }
   </style>
 </head>
 
 <body>
 
   <div id="loader" class="fullscreen-overlay">
-    <i class="fas fa-circle-notch fa-spin" style="font-size: 3rem; color: #0ea5e9; margin-bottom: 15px;"></i>
-    <p style="color: white; font-weight: 600;" id="loaderText">Memuat Sistem...</p>
+    <i class="fas fa-circle-notch fa-spin" style="font-size: 2.5rem; color: #3b82f6; margin-bottom: 18px;"></i>
+    <p style="color: white; font-weight: 600; letter-spacing: 0.5px;" id="loaderText">Menyiapkan Sistem...</p>
   </div>
 
-  <div id="loginScreen" class="fullscreen-overlay hidden" style="background: linear-gradient(135deg, #0f172a, #1e293b);">
+  <div id="loginScreen" class="fullscreen-overlay hidden">
     <div class="login-box">
-      <i class="fas fa-network-wired" style="font-size: 3rem; color: #0ea5e9; margin-bottom: 10px;"></i>
+      <div style="background: #eff6ff; width: 80px; height: 80px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 20px;">
+        <i class="fas fa-network-wired" style="font-size: 2.5rem; color: #3b82f6;"></i>
+      </div>
       <h2>ION PORTAL</h2>
       <div class="input-grp"><i class="fas fa-envelope"></i><input type="email" id="logEmail" placeholder="Email Anda"></div>
       <div class="input-grp"><i class="fas fa-lock"></i><input type="password" id="logPass" placeholder="Password"></div>
-      <button id="btnLogin" class="btn-login" onclick="doLogin()">Masuk</button>
+      <button id="btnLogin" class="btn-login" onclick="doLogin()">Masuk Akses</button>
     </div>
   </div>
 
@@ -108,11 +149,11 @@
     </div>
 
     <div id="tab-home" class="content-area active">
-      <h4 style="margin-bottom: 15px; color: #334155;">Menu Cepat</h4>
+      <h4 style="margin-bottom: 10px; margin-left: 5px; color: var(--text-main); font-size: 1.1rem;">Akses Cepat</h4>
       <div class="menu-grid">
         <a href="instalasi/index.html" class="menu-card">
           <div class="icon-box bg-blue"><i class="fas fa-file-signature"></i></div>
-          <div><h4>Laporan Instalasi</h4><p>Buat laporan pasang baru & reschdule</p></div>
+          <div><h4>Laporan Instalasi</h4><p>Buat laporan pasang baru & reschedule</p></div>
         </a>
         <a href="terminate/index.html" class="menu-card">
           <div class="icon-box bg-orange"><i class="fas fa-user-minus"></i></div>
@@ -126,16 +167,21 @@
     </div>
 
     <div id="tab-odp" class="content-area">
-      <div class="action-bar">
-        <input type="text" class="search-input" id="searchOdp" placeholder="Cari Nama / Kode ODP..." oninput="renderOdp()">
-        <button class="btn-add admin-only" onclick="openModal('odp', 'add')"><i class="fas fa-plus"></i> ODP</button>
-        <button class="btn-add admin-only" style="background: #10b981;" onclick="openBulkOdp()"><i class="fas fa-upload"></i></button>
+      <div class="action-container">
+        <div class="action-row">
+          <input type="text" class="search-input" id="searchOdp" placeholder="Cari Nama ODP..." oninput="renderOdp()">
+          <button class="btn-add admin-only" onclick="openModal('odp', 'add')"><i class="fas fa-plus"></i></button>
+          <button class="btn-add admin-only" style="background: #10b981;" onclick="openBulkOdp()"><i class="fas fa-file-upload"></i></button>
+        </div>
+        <select class="search-input" id="filterOdpOlt" onchange="renderOdp()">
+          <option value="">Semua OLT Induk</option>
+          </select>
       </div>
       <div id="listOdp"></div>
     </div>
 
     <div id="tab-olt" class="content-area">
-      <div class="action-bar">
+      <div class="action-row" style="margin-bottom: 18px;">
         <input type="text" class="search-input" id="searchOlt" placeholder="Cari OLT..." oninput="renderOlt()">
         <button class="btn-add admin-only" onclick="openModal('olt', 'add')"><i class="fas fa-plus"></i> OLT</button>
       </div>
@@ -143,9 +189,9 @@
     </div>
 
     <div id="tab-member" class="content-area admin-only">
-      <div class="action-bar">
+      <div class="action-row" style="margin-bottom: 18px;">
         <input type="text" class="search-input" id="searchMember" placeholder="Cari Teknisi..." oninput="renderMember()">
-        <button class="btn-add" onclick="openModal('member', 'add')"><i class="fas fa-plus"></i> Tim</button>
+        <button class="btn-add" onclick="openModal('member', 'add')"><i class="fas fa-user-plus"></i> Tim</button>
       </div>
       <div id="listMember"></div>
     </div>
@@ -155,26 +201,30 @@
       <div class="nav-item" onclick="switchTab('odp', this)"><i class="fas fa-box"></i>ODP</div>
       <div class="nav-item" onclick="switchTab('olt', this)"><i class="fas fa-server"></i>OLT</div>
       <div class="nav-item admin-only" onclick="switchTab('member', this)"><i class="fas fa-users"></i>Tim</div>
-      <div class="nav-item" onclick="doLogout()"><i class="fas fa-sign-out-alt" style="color:#ef4444;"></i>Keluar</div>
+      <div class="nav-item" onclick="doLogout()"><i class="fas fa-sign-out-alt" style="color:var(--admin);"></i>Keluar</div>
     </nav>
 
-  </div> <div class="modal-sheet" id="crudModal">
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+
+  <div class="modal-sheet" id="crudModal">
     <div class="modal-header">
       <h3 id="modalTitle">Tambah Data</h3>
-      <i class="fas fa-times" style="font-size: 1.5rem; color: #94a3b8; cursor: pointer;" onclick="closeModal()"></i>
+      <div class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></div>
     </div>
     <div class="modal-body" id="modalFormBody">
       </div>
     <div class="modal-footer admin-only">
-      <button class="btn-full btn-delete" id="btnDelete" onclick="saveData('delete')" style="display: none;"><i class="fas fa-trash"></i> Hapus</button>
-      <button class="btn-full btn-save" onclick="saveData('save')"><i class="fas fa-save"></i> Simpan</button>
+      <button class="btn-full btn-delete" id="btnDelete" onclick="saveData('delete')" style="display: none;"><i class="fas fa-trash-alt"></i> Hapus</button>
+      <button class="btn-full btn-save" onclick="saveData('save')"><i class="fas fa-check"></i> Simpan Data</button>
     </div>
   </div>
 
   <div class="modal-sheet" id="bulkModal">
     <div class="modal-header">
       <h3>Upload Massal ODP</h3>
-      <i class="fas fa-times" style="font-size: 1.5rem; cursor: pointer;" onclick="closeModal()"></i>
+      <div class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></div>
     </div>
     <div class="modal-body">
       <div class="form-group">
@@ -183,7 +233,7 @@
       </div>
       <div class="form-group">
         <label>Daftar Nama ODP (Pisahkan dengan Enter)</label>
-        <textarea id="bulkOdpText" rows="10" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #ccc;"></textarea>
+        <textarea id="bulkOdpText" rows="8" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border-color); font-family: monospace; outline: none;"></textarea>
       </div>
     </div>
     <div class="modal-footer">
@@ -193,4 +243,4 @@
 
   <script src="script.js"></script>
 </body>
-        </html>
+  </html>

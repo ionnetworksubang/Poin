@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Monitoring Aktivitas | ION Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    :root { --bg-color: #f4f7f6; --card-bg: #ffffff; --text-main: #2c3e50; --text-muted: #7f8c8d; --border-color: #e2e8f0; --primary: #3b82f6; --danger: #ef4444; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', Arial, sans-serif; }
+    body { background: var(--bg-color); color: var(--text-main); -webkit-tap-highlight-color: transparent; }
+    
+    /* HEADER STICKY */
+    .app-header {
+      position: sticky; top: 0; z-index: 100; background: white;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    .header-btn {
+      width: 40px; height: 40px; background: #f8fafc; border-radius: 10px; display: flex; justify-content: center; align-items: center;
+      font-size: 1.2rem; color: var(--text-main); cursor: pointer; border: 1px solid var(--border-color);
+    }
+    .header-title { font-size: 1.1rem; font-weight: 800; color: #db2777; display:flex; gap:8px; align-items:center;}
+    
+    .container { padding: 20px 15px; max-width: 600px; margin: 0 auto; }
+    
+    /* FILTER BOX */
+    .filter-box { background: white; padding: 18px; border-radius: 16px; margin-bottom: 20px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+    .filter-box label { font-size: 0.85rem; font-weight: 700; color: #475569; display:block; margin-bottom:8px;}
+    .select-modern { width: 100%; padding: 14px 16px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 0.95rem; background: #f8fafc; color: #1e293b; outline: none; transition: 0.3s; }
+    .select-modern:focus { border-color: #db2777; box-shadow: 0 0 0 3px rgba(219,39,119,0.15); background: white; }
+
+    /* TAB NAVIGASI */
+    .tab-nav { display: flex; background: white; border-radius: 14px; padding: 5px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
+    .tab-btn { flex: 1; text-align: center; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; color: #64748b; cursor: pointer; transition: 0.3s; }
+    .tab-btn.active { background: #fdf2f8; color: #db2777; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.4s; }
+    @keyframes fadeIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
+
+    /* KARTU AKTIVITAS */
+    .activity-card { background: white; padding: 18px; border-radius: 16px; margin-bottom: 15px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+    .act-header { display: flex; justify-content: space-between; border-bottom: 2px dashed var(--border-color); padding-bottom: 12px; margin-bottom: 12px; }
+    .act-title { font-weight: 800; color: #1e293b; font-size: 1.05rem; }
+    .act-cid { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+    .act-type { background: #eff6ff; color: var(--primary); padding: 5px 10px; border-radius: 8px; font-weight: 800; font-size: 0.75rem; text-transform:uppercase; letter-spacing:0.5px;}
+    .act-data { display: grid; gap: 6px; font-size: 0.85rem; color: #475569; margin-bottom: 15px;}
+    .act-data div { display: flex; gap: 8px; align-items:flex-start;}
+    .act-data i { color: #db2777; width: 15px; margin-top: 3px;}
+    
+    /* TOMBOL ACTION SIMETRIS */
+    .action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn { padding: 12px; border-radius: 10px; border: none; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 6px; transition: 0.2s; }
+    .btn:active { transform: translateY(2px); }
+    .btn-edit { background: #eff6ff; color: var(--primary); border: 1px dashed var(--primary); }
+    .btn-del { background: #fef2f2; color: var(--danger); border: 1px dashed var(--danger); }
+
+    /* LOADER */
+    .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: #0f172a; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; transition: 0.4s; }
+    .loader-overlay.hidden { opacity: 0; visibility: hidden; }
+
+    /* =========================================
+       MODAL SYSTEM NATIVE APP (BOTTOM SHEET)
+       ========================================= */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(15, 23, 42, 0.6); z-index: 999; opacity: 0; visibility: hidden; transition: 0.3s; }
+    .modal-overlay.open { opacity: 1; visibility: visible; }
+    .modal-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; max-height: 90vh; background: white; z-index: 1000; border-radius: 28px 28px 0 0; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; }
+    .modal-sheet.open { bottom: 0; }
+    .modal-header { padding: 22px 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .close-btn { width: 32px; height: 32px; background: #f1f5f9; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; color: #475569; }
+    .modal-body { padding: 25px; overflow-y: auto; flex: 1; }
+    .modal-footer { padding: 18px 25px; border-top: 1px solid var(--border-color); display: flex; gap: 12px; }
+    
+    .btn-full { flex: 1; padding: 16px; border-radius: 14px; font-weight: 700; font-size: 1rem; color: white; cursor: pointer; border: none; display: flex; justify-content: center; align-items: center; gap: 8px;}
+    .btn-save { background: var(--primary); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25); }
+    
+    .form-group { margin-bottom: 16px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
+    .form-group input, .form-group select { width: 100%; padding: 14px 16px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 0.95rem; background: #f8fafc; outline: none; transition: 0.3s; font-family: 'Plus Jakarta Sans', sans-serif;}
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+  </style>
+</head>
+<body>
+
+  <div class="loader-overlay" id="loader">
+    <i class="fas fa-desktop fa-beat" style="font-size: 3rem; color: #db2777; margin-bottom: 15px;"></i>
+    <p style="font-weight: 600;">Memuat Riwayat Sistem...</p>
+  </div>
+
+  <header class="app-header">
+    <div class="header-btn" onclick="window.location.href='index.html'"><i class="fas fa-arrow-left"></i></div>
+    <div class="header-title"><i class="fas fa-desktop"></i> Monitoring</div>
+    <div class="header-btn" onclick="location.reload()"><i class="fas fa-sync-alt" style="color: #db2777;"></i></div>
+  </header>
+
+  <div class="container">
+    
+    <div class="filter-box">
+        <label>🔍 Pantau Aktivitas Dari:</label>
+        <select id="userFilter" class="select-modern" onchange="renderData()">
+            <option value="">-- Pilih Admin / Teknisi --</option>
+            <option value="ALL">🌟 SEMUA TIM</option>
+        </select>
+    </div>
+
+    <div class="tab-nav">
+        <div class="tab-btn active" id="btnTabPelanggan" onclick="switchTab('Pelanggan')">Laporan Pelanggan (<span id="countPelanggan">0</span>)</div>
+        <div class="tab-btn" id="btnTabOdp" onclick="switchTab('Odp')">Pembuat ODP (<span id="countOdp">0</span>)</div>
+    </div>
+
+    <div id="tabPelanggan" class="tab-content active">
+        <div id="listPelanggan"></div>
+    </div>
+
+    <div id="tabOdp" class="tab-content">
+        <div id="listOdp"></div>
+    </div>
+
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+  <div class="modal-sheet" id="editModal">
+    <div class="modal-header">
+      <h3 style="margin:0; font-size:1.15rem; color:#1e293b;"><i class="fas fa-edit" style="color:var(--primary);"></i> Koreksi Laporan</h3>
+      <div class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></div>
+    </div>
+    
+    <div class="modal-body">
+       <div class="form-grid">
+           <div class="form-group"><label>Nama Pelanggan</label><input type="text" id="editNama"></div>
+           <div class="form-group"><label>Nomor CID</label><input type="number" id="editCid"></div>
+       </div>
+       <div class="form-grid">
+           <div class="form-group"><label>Pilih OLT Induk</label><select id="editOlt" onchange="updateEditOdp()"></select></div>
+           <div class="form-group">
+               <label>Ketik ODP Tujuan</label>
+               <input type="text" id="editOdp" list="odp-list" placeholder="Ketik nama ODP..." autocomplete="off">
+               <datalist id="odp-list"></datalist>
+           </div>
+       </div>
+       <div class="form-grid">
+           <div class="form-group"><label>Port Tujuan</label><input type="number" id="editPort"></div>
+           <div class="form-group"><label>Jenis Perangkat</label>
+               <select id="editPerangkat">
+                  <option value="">-- Pilih --</option>
+                  <option value="C-DATA XPON ONU">C-DATA XPON ONU</option>
+                  <option value="C-DATA XPON DUAL-BAND ONU">C-DATA XPON DUAL-BAND ONU</option>
+                  <option value="RISECOME">RISECOME</option>
+                  <option value="RISECOME (DISMANTLE)">RISECOME (DISMANTLE)</option>
+                  <option value="C-DATA XPON ONU (DISMANTLE)">C-DATA XPON ONU (DISMANTLE)</option>
+               </select>
+           </div>
+       </div>
+       <div class="form-grid">
+           <div class="form-group"><label>SN Perangkat</label><input type="text" id="editSn"></div>
+           <div class="form-group"><label>Nama Teknisi</label><input type="text" id="editTeknisi"></div>
+       </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-full btn-save" onclick="saveEditLaporan()"><i class="fas fa-check"></i> Simpan Perubahan</button>
+    </div>
+  </div>
+
+  <script>
+    // ⚠️ GANTI DENGAN URL WEB APP V6 ANDA
+    const API_URL = "https://script.google.com/macros/s/AKfycbw12NOapHRmUvNqSzs4Oj_OTFkX2SSHTNaufp1pGPYNoKlvnxZ9DfjkLjk0RvrF4vTtOQ/exec";
+    
+    let currentUser = JSON.parse(localStorage.getItem('ionUser'));
+    let masterData = {};
+    
+    // Variabel Penampung Form Edit
+    let activeEditData = [];
+    let activeOldCid = "";
+
+    window.onload = async () => {
+      // Keamanan Khusus Admin
+      if (!currentUser || currentUser.role !== 'Admin') {
+          alert('Akses Ditolak! Fitur ini hanya untuk Admin.');
+          window.location.href = "index.html";
+          return;
+      }
+      
+      try {
+        let res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "getData" }) }).then(r=>r.json());
+        if (res.ok) {
+          masterData = res.data;
+          masterData.pelanggan.reverse();
+          masterData.odp.reverse();
+          populateUserFilter();
+          document.getElementById('loader').classList.add('hidden');
+        } else { Swal.fire('Error', res.message, 'error'); }
+      } catch (e) { Swal.fire('Error', 'Gagal memuat riwayat data', 'error'); }
+    };
+
+    function populateUserFilter() {
+        let opts = '<option value="">-- Pilih Admin / Teknisi --</option><option value="ALL">🌟 Tampilkan Semua Data</option>';
+        masterData.member.forEach(r => opts += `<option value="${r[0]}">${r[0]}</option>`);
+        document.getElementById('userFilter').innerHTML = opts;
+        renderData(); 
+    }
+
+    function switchTab(tabName) {
+        document.getElementById('btnTabPelanggan').classList.remove('active');
+        document.getElementById('btnTabOdp').classList.remove('active');
+        document.getElementById('tabPelanggan').classList.remove('active');
+        document.getElementById('tabOdp').classList.remove('active');
+
+        document.getElementById('btnTab' + tabName).classList.add('active');
+        document.getElementById('tab' + tabName).classList.add('active');
+    }
+
+    function renderData() {
+        let selectedUser = document.getElementById('userFilter').value;
+        if (!selectedUser) {
+            document.getElementById('listPelanggan').innerHTML = "<p style='text-align:center; color:#94a3b8; margin-top:30px;'>Pilih nama teknisi di atas untuk melihat riwayatnya.</p>";
+            document.getElementById('listOdp').innerHTML = "<p style='text-align:center; color:#94a3b8; margin-top:30px;'>Pilih nama teknisi di atas untuk melihat riwayatnya.</p>";
+            return;
+        }
+
+        // 1. Render Pelanggan
+        let pelHTML = ""; let countPel = 0;
+        masterData.pelanggan.forEach(p => {
+            if (selectedUser === "ALL" || p[7] === selectedUser) {
+                countPel++;
+                let rawData = encodeURIComponent(JSON.stringify(p));
+                pelHTML += `
+                <div class="activity-card">
+                    <div class="act-header">
+                        <div>
+                            <div class="act-title">${p[2]}</div>
+                            <div class="act-cid">CID: ${p[3]}</div>
+                        </div>
+                        <div class="act-type">${p[1]}</div>
+                    </div>
+                    <div class="act-data">
+                        <div><i class="far fa-clock"></i> <span>Dikerjakan: <strong>${p[0].substring(0, 16)}</strong></span></div>
+                        <div><i class="fas fa-user-hard-hat"></i> <span>Teknisi: <strong>${p[7]}</strong></span></div>
+                        <div><i class="fas fa-network-wired"></i> <span>Lokasi: <strong>${p[5]} (Port ${p[6]})</strong></span></div>
+                        <div><i class="fas fa-router"></i> <span>SN Perangkat: <strong>${p[11]}</strong></span></div>
+                    </div>
+                    <div class="action-btns">
+                        <button class="btn btn-edit" onclick="openEditModal('${rawData}')"><i class="fas fa-edit"></i> Edit Koreksi</button>
+                        <button class="btn btn-del" onclick="deleteLaporan('${p[3]}')"><i class="fas fa-trash"></i> Hapus Laporan</button>
+                    </div>
+                </div>`;
+            }
+        });
+        document.getElementById('listPelanggan').innerHTML = pelHTML || "<p style='text-align:center; color:#94a3b8;'>Belum ada laporan dari user ini.</p>";
+        document.getElementById('countPelanggan').innerText = countPel;
+
+        // 2. Render ODP 
+        let odpHTML = ""; let countO = 0;
+        masterData.odp.forEach(o => {
+            if (selectedUser === "ALL" || o[10] === selectedUser) {
+                countO++;
+                odpHTML += `
+                <div class="activity-card">
+                    <div class="act-header">
+                        <div>
+                            <div class="act-title">${o[0]}</div>
+                            <div class="act-cid">OLT Induk: ${o[2]}</div>
+                        </div>
+                        <div class="act-type" style="background:#fce7f3; color:#db2777;">BUAT ODP BARU</div>
+                    </div>
+                    <div class="act-data">
+                        <div><i class="far fa-clock"></i> <span>Tgl Dibuat: <strong>${o[9]}</strong></span></div>
+                        <div><i class="fas fa-user-plus"></i> <span>Pembuat: <strong>${o[10]}</strong></span></div>
+                        <div><i class="fas fa-server"></i> <span>Max Port: <strong>${o[11]}</strong></span></div>
+                    </div>
+                    <div class="action-btns">
+                        <button class="btn btn-del" style="grid-column: span 2;" onclick="deleteOdp('${o[0]}')"><i class="fas fa-trash"></i> Hapus Permanen ODP Ini</button>
+                    </div>
+                </div>`;
+            }
+        });
+        document.getElementById('listOdp').innerHTML = odpHTML || "<p style='text-align:center; color:#94a3b8;'>Belum pernah buat ODP.</p>";
+        document.getElementById('countOdp').innerText = countO;
+    }
+
+    async function deleteLaporan(cid) {
+        if(!await Swal.fire({title: 'Hapus Laporan?', text: 'Data laporan ini akan musnah dan port kembali kosong.', icon: 'warning', showCancelButton: true}).then(r=>r.isConfirmed)) return;
+        document.getElementById('loader').classList.remove('hidden');
+        try {
+            let res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "crud", payload: { sheetName: "Data_Pelanggan", mode: "delete", oldKey: cid }}) }).then(r=>r.json());
+            if(res.ok) { Swal.fire('Terhapus', res.message, 'success'); setTimeout(() => location.reload(), 1000); } 
+            else { Swal.fire('Error', res.message, 'error'); document.getElementById('loader').classList.add('hidden'); }
+        } catch(e) { Swal.fire('Error', 'Koneksi gagal', 'error'); document.getElementById('loader').classList.add('hidden');}
+    }
+
+    async function deleteOdp(namaOdp) {
+        if(!await Swal.fire({title: 'HAPUS ODP INI?', text: 'Semua pelanggan di dalam ODP ini juga akan terhapus!', icon: 'error', showCancelButton: true, confirmButtonColor: '#ef4444'}).then(r=>r.isConfirmed)) return;
+        document.getElementById('loader').classList.remove('hidden');
+        try {
+            let res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "crud", payload: { sheetName: "odp", mode: "delete", oldKey: namaOdp }}) }).then(r=>r.json());
+            if(res.ok) { Swal.fire('ODP Dihancurkan', res.message, 'success'); setTimeout(() => location.reload(), 1500); } 
+            else { Swal.fire('Error', res.message, 'error'); document.getElementById('loader').classList.add('hidden'); }
+        } catch(e) { Swal.fire('Error', 'Koneksi gagal', 'error'); document.getElementById('loader').classList.add('hidden');}
+    }
+
+    // ===============================================================
+    // FUNGSI BARU: BUKA MODAL BOTTOM SHEET & ISI DATA
+    // ===============================================================
+    function openEditModal(encodedData) {
+        let c = JSON.parse(decodeURIComponent(encodedData));
+        activeEditData = c;
+        activeOldCid = c[3];
+
+        // Masukkan data ke kotak input
+        document.getElementById('editNama').value = c[2];
+        document.getElementById('editCid').value = c[3];
+        document.getElementById('editOdp').value = c[5];
+        document.getElementById('editPort').value = c[6];
+        document.getElementById('editPerangkat').value = c[10] || "";
+        document.getElementById('editSn').value = c[11];
+        document.getElementById('editTeknisi').value = c[7];
+
+        // Setup Dropdown OLT
+let oltSelect = document.getElementById('editOlt');
+        let oltOpts = '<option value="">-- Pilih OLT --</option>';
+        masterData.olt.forEach(r => { 
+            let sel = (r[0] === c[4]) ? 'selected' : ''; 
+            oltOpts += `<option value="${r[0]}" ${sel}>${r[0]}</option>`; 
+        });
+        oltSelect.innerHTML = oltOpts;
+
+        // Panggil list ODP sesuai OLT yang terpilih
+        updateEditOdp();
+
+        // Tampilkan Modal meluncur dari bawah
+        document.getElementById('modalOverlay').classList.add('open');
+        document.getElementById('editModal').classList.add('open');
+    }
+
+    function updateEditOdp() {
+        let selectedOlt = document.getElementById('editOlt').value;
+        let datalist = document.getElementById('odp-list');
+        let odpOpts = '';
+        
+        // Memunculkan sugesti ODP khusus untuk OLT yg dipilih
+        masterData.odp.forEach(r => {
+            if (r[2] === selectedOlt) {
+                odpOpts += `<option value="${r[0]}">`;
+            }
+        });
+        datalist.innerHTML = odpOpts;
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('open');
+        document.getElementById('editModal').classList.remove('open');
+    }
+
+    async function saveEditLaporan() {
+        let nama = document.getElementById('editNama').value;
+        let cid = document.getElementById('editCid').value;
+        let olt = document.getElementById('editOlt').value;
+        let odp = document.getElementById('editOdp').value;
+        let port = document.getElementById('editPort').value;
+        let perangkat = document.getElementById('editPerangkat').value;
+        let sn = document.getElementById('editSn').value;
+        let teknisi = document.getElementById('editTeknisi').value;
+
+        // 1. Validasi Kosong
+        if (!nama || !cid || !olt || !odp) {
+            return Swal.fire('Gagal', 'Nama, CID, OLT, dan ODP wajib diisi!', 'error');
+        }
+
+        // 2. Validasi ODP harus 100% cocok dengan OLT
+        let isOdpValid = masterData.odp.some(r => r[2] === olt && r[0].toLowerCase() === odp.toLowerCase());
+        if (!isOdpValid) {
+            return Swal.fire('ODP Salah', `ODP "${odp}" tidak terdaftar di OLT ${olt}!`, 'error');
+        }
+
+        closeModal();
+        document.getElementById('loader').classList.remove('hidden');
+
+        // Timpa array data lama dengan hasil ketikan baru
+        activeEditData[2] = nama; 
+        activeEditData[3] = cid; 
+        activeEditData[4] = olt; 
+        activeEditData[5] = odp; 
+        activeEditData[6] = port; 
+        activeEditData[7] = teknisi; 
+        activeEditData[10] = perangkat; 
+        activeEditData[11] = sn;
+
+        try {
+            let res = await fetch(API_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: "crud", payload: { sheetName: "Data_Pelanggan", mode: "edit", dataRow: activeEditData, oldKey: activeOldCid }}) 
+            }).then(r=>r.json());
+            
+            if(res.ok) { 
+                Swal.fire('Terkoreksi', 'Data berhasil diperbaiki!', 'success'); 
+                setTimeout(() => location.reload(), 1000); 
+            } else { 
+                Swal.fire('Error', res.message, 'error'); 
+                document.getElementById('loader').classList.add('hidden');
+            }
+        } catch(e) { 
+            Swal.fire('Error', 'Koneksi gagal', 'error'); 
+            document.getElementById('loader').classList.add('hidden');
+        }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laporan Terminate</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Form Laporan Terminate Subang</h2>
+    <div class="subtitle">Terminate</div>
+
+    <div class="date-display" id="currentDate"></div>
+
+    <div class="header-input">
+      <label for="reportTitle">Judul Laporan</label>
+      <input type="text" id="ket{id}" value="LAPORAN TERMINATE SUBANG">
+      
+      <label for="reportDate">Tanggal Laporan</label>
+      <input type="text" id="reportDate" placeholder="Contoh: Rabu, 24 September 2025">
+      
+      <label for="teamName">Nama Tim</label>
+      <input type="text" id="teamName" placeholder="Contoh: Ramdan">
+    </div>
+
+    <div id="forms"></div>
+
+    <div class="btn-group">
+      <button class="add-gudang" onclick="addForm('gudang')">+ Terminate</button>
+    </div>
+
+    <div class="btn-group">
+      <button class="generate" onclick="generate()">Buat Laporan</button>
+      <button class="wa" onclick="sendWA()">Kirim via WhatsApp</button>
+      <button class="reset" onclick="resetLaporan()">Reset Laporan</button>
+    </div>
+    
+    <pre id="output"></pre>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
